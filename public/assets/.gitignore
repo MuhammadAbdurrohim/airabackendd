@@ -1,0 +1,12 @@
+# Ignore all files in assets directory
+*
+!.gitignore
+!README.md
+
+# Keep directory structure but ignore contents
+dist/
+!dist/.gitkeep
+plugins/
+!plugins/.gitkeep
+img/
+!img/.gitkeep
