@@ -8,6 +8,9 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\PaymentSettingsController;
 use App\Http\Controllers\Admin\ShippingController;
 use App\Http\Controllers\Admin\LiveStreamingController;
+use App\Http\Controllers\Admin\NotificationController;
+use App\Http\Controllers\Admin\WhatsAppController;
+use App\Http\Controllers\Admin\WebhookLogController;
 use Illuminate\Support\Facades\Route;
 
 // Guest routes
@@ -69,6 +72,29 @@ Route::middleware('auth:admin')->group(function () {
         Route::post('start', [LiveStreamingController::class, 'start'])->name('streaming.start');
         Route::post('end', [LiveStreamingController::class, 'end'])->name('streaming.end');
         Route::post('toggle-product', [LiveStreamingController::class, 'toggleProduct'])->name('streaming.toggleProduct');
+
+        // New routes for pinned product, analytics, order comments
+        Route::post('pin-product', [LiveStreamingController::class, 'pinProduct'])->name('live-stream.pin-product');
+        Route::post('save-analytics', [LiveStreamingController::class, 'saveAnalytics'])->name('live-stream.save-analytics');
+        Route::get('order-comments', [LiveStreamingController::class, 'orderComments'])->name('live-stream.order-comments');
+        Route::get('export-order-comments', [LiveStreamingController::class, 'exportOrderComments'])->name('live-stream.export-order-comments');
+
+        // Voucher Management Routes
+        Route::prefix('vouchers')->name('streaming.vouchers.')->group(function () {
+            Route::get('/', [LiveVoucherController::class, 'index'])->name('index');
+            Route::get('/create', [LiveVoucherController::class, 'create'])->name('create');
+            Route::post('/', [LiveVoucherController::class, 'store'])->name('store');
+            Route::get('/{voucher}/edit', [LiveVoucherController::class, 'edit'])->name('edit');
+            Route::put('/{voucher}', [LiveVoucherController::class, 'update'])->name('update');
+            Route::post('/{voucher}/toggle-status', [LiveVoucherController::class, 'toggleStatus'])->name('toggle-status');
+            Route::delete('/{voucher}', [LiveVoucherController::class, 'destroy'])->name('destroy');
+        });
+
+        // Live Orders History Routes
+        Route::prefix('orders')->name('streaming.orders.')->group(function () {
+            Route::get('/', [LiveStreamingController::class, 'liveOrders'])->name('index');
+            Route::get('/export', [LiveStreamingController::class, 'exportLiveOrders'])->name('export');
+        });
     });
 
     // Profile
@@ -76,5 +102,47 @@ Route::middleware('auth:admin')->group(function () {
         Route::get('/', [AuthController::class, 'showProfile'])->name('profile.show');
         Route::patch('/', [AuthController::class, 'updateProfile'])->name('profile.update');
         Route::patch('/password', [AuthController::class, 'updatePassword'])->name('profile.password');
+    });
+
+    // Notifications
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::post('{id}/read', [NotificationController::class, 'markAsRead'])->name('read');
+        Route::post('mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+        Route::delete('{id}', [NotificationController::class, 'destroy'])->name('destroy');
+        Route::post('clear-all', [NotificationController::class, 'destroyAll'])->name('clear-all');
+    });
+
+    // WhatsApp Management
+    Route::prefix('whatsapp')->name('whatsapp.')->group(function () {
+        Route::get('/', [WhatsAppController::class, 'index'])->name('index');
+        Route::get('logs', [WhatsAppController::class, 'logs'])->name('logs');
+        
+        // Auto Replies
+        Route::get('auto-replies', [WhatsAppController::class, 'autoReplies'])->name('auto-replies');
+        Route::post('auto-replies', [WhatsAppController::class, 'storeAutoReply'])->name('auto-replies.store');
+        Route::put('auto-replies/{autoReply}', [WhatsAppController::class, 'updateAutoReply'])->name('auto-replies.update');
+        Route::delete('auto-replies/{autoReply}', [WhatsAppController::class, 'destroyAutoReply'])->name('auto-replies.destroy');
+        
+        // Broadcast
+        Route::get('broadcast', [WhatsAppController::class, 'broadcast'])->name('broadcast');
+        Route::post('broadcast/preview', [WhatsAppController::class, 'previewBroadcast'])->name('broadcast.preview');
+        Route::post('broadcast/send', [WhatsAppController::class, 'sendBroadcast'])->name('broadcast.send');
+        
+        // Conversations
+        Route::get('conversation/{phoneNumber}', [WhatsAppController::class, 'conversation'])->name('conversation');
+        Route::post('send', [WhatsAppController::class, 'send'])->name('send');
+        
+        // Message Management
+        Route::get('messages/{id}', [WhatsAppController::class, 'show'])->name('messages.show');
+        Route::get('export', [WhatsAppController::class, 'export'])->name('export');
+        Route::get('statistics', [WhatsAppController::class, 'statistics'])->name('statistics');
+    });
+
+    // Webhook Logs
+    Route::prefix('webhook-logs')->name('webhook-logs.')->group(function () {
+        Route::get('/', [WebhookLogController::class, 'index'])->name('index');
+        Route::get('/export', [WebhookLogController::class, 'export'])->name('export');
+        Route::get('/{webhookLog}', [WebhookLogController::class, 'show'])->name('show');
     });
 });
