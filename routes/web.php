@@ -82,7 +82,3 @@ Route::prefix('admin')->group(function () {
         });
     });
 });
-use App\Http\Controllers\Admin\AuthController;
-use App\Http\Controllers\Admin\DashboardController;
-
-// Removed duplicate routes below as they are already defined in the admin prefix group above
